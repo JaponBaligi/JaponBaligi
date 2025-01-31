@@ -443,13 +443,8 @@ if __name__ == '__main__':
     # e.g {'id': 'U_kgDOBaaC9g'} and 2019-11-03T21:15:07Z for username 'JaponBaligi'
     user_data, user_time = perf_counter(user_getter, USER_NAME)
     OWNER_ID, acc_date = user_data
-    print("Owner ID and Username:", OWNER_ID, USER_NAME) 
-    print("ACCESS_TOKEN:", os.environ.get('ACCESS_TOKEN'))
-    print("USER_NAME:", os.environ.get('USER_NAME'))
-    print("HEADERS:", HEADERS)
     formatter('account data', user_time)
     age_data, age_time = perf_counter(daily_readme, datetime.datetime(2002, 1, 23))
-    birthday = datetime(2002, 1, 23)
     formatter('age calculation', age_time)
     total_loc, loc_time = perf_counter(loc_query, ['OWNER', 'COLLABORATOR', 'ORGANIZATION_MEMBER'], 7)
     formatter('LOC (cached)', loc_time) if total_loc[-1] else formatter('LOC (no cache)', loc_time)
