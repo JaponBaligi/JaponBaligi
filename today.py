@@ -284,27 +284,53 @@ def add_archive():
     with open('cache/repository_archive.txt', 'r') as f:
         data = f.readlines()
     old_data = data
-    data = data[7:len(data)-3] # remove the comment block    
+    data = data[7:len(data)-3]  # Remove the comment block    
     added_loc, deleted_loc, added_commits = 0, 0, 0
     contributed_repos = len(data)
+    
+    # Process the valid lines
     for line in data:
         repo_hash, total_commits, my_commits, *loc = line.split()
         added_loc += int(loc[0])
         deleted_loc += int(loc[1])
-        if (my_commits.isdigit()): added_commits += int(my_commits)
-    added_commits += int(old_data[-1].split()[4][:-1])
+        if my_commits.isdigit(): 
+            added_commits += int(my_commits)
+    
+    # Check if the last line in old_data has enough data
+    if len(old_data) > 0:
+        last_line = old_data[-1].split()
+        if len(last_line) > 4:  # Ensure there are enough elements
+            added_commits += int(last_line[4][:-1])  # Remove the trailing character
+        else:
+            print("Warning: Last line in archived data is malformed or missing expected data.")
+    else:
+        print("Warning: No data in repository archive.")
+    
     return [added_loc, deleted_loc, added_loc - deleted_loc, added_commits, contributed_repos]
+
 
 def force_close_file(data, cache_comment):
     """
-    Forces the file to close, preserving whatever data was written to it
-    This is needed because if this function is called, the program would've crashed before the file is properly saved and closed
+    Forces the file to close, preserving whatever data was written to it.
+    This is needed because if this function is called, the program would've crashed before the file is properly saved and closed.
     """
-    filename = 'cache/'+hashlib.sha256(USER_NAME.encode('utf-8')).hexdigest()+'.txt'
-    with open(filename, 'w') as f:
-        f.writelines(cache_comment)
-        f.writelines(data)
-    print('There was an error while writing to the cache file. The file,', filename, 'has had the partial data saved and closed.')
+    filename = 'cache/' + hashlib.sha256(USER_NAME.encode('utf-8')).hexdigest() + '.txt'
+
+    try:
+        # Check if there is data to write
+        if data or cache_comment:
+            with open(filename, 'w') as f:
+                f.writelines(cache_comment)  # Write comments first
+                f.writelines(data)           # Then write the actual data
+            print(f"There was an error while writing to the cache file. The file, {filename}, has had the partial data saved and closed.")
+            return True  # Return success status
+        else:
+            print("Warning: No data to write to the cache file.")
+            return False  # Return failure status if no data to write
+    except Exception as e:
+        print(f"Error while saving the cache file: {e}")
+        return False  # Return failure status on error
+
 
 
 def stars_counter(data):
