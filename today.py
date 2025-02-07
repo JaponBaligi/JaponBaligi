@@ -20,7 +20,8 @@ def daily_readme(birthday):
     Returns the length of time since I was born
     e.g. 'XX years, XX months, XX days'
     """
-    diff = relativedelta.relativedelta(datetime.today(), birthday)
+    # Use datetime.utcnow() to avoid timezone issues
+    diff = relativedelta.relativedelta(datetime.utcnow(), birthday)
     return '{} {}, {} {}, {} {}{}'.format(
         diff.years, 'year' + format_plural(diff.years), 
         diff.months, 'month' + format_plural(diff.months), 
@@ -487,6 +488,8 @@ if __name__ == '__main__':
     user_data, user_time = perf_counter(user_getter, USER_NAME)
     OWNER_ID, acc_date = user_data
     formatter('account data', user_time)
+    birthday = (2002, 1, 23)
+    print(daily_readme(birthday))
     age_data, age_time = perf_counter(daily_readme, datetime(2002, 1, 23))
     formatter('age calculation', age_time)
     total_loc, loc_time = perf_counter(loc_query, ['OWNER', 'COLLABORATOR', 'ORGANIZATION_MEMBER'], 7)
