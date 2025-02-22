@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from dateutil import relativedelta
 import requests
 import os
@@ -20,7 +20,7 @@ def daily_readme(birthday):
     Returns the length of time since I was born
     e.g. 'XX years, XX months, XX days'
     """
-    diff = relativedelta.relativedelta(datetime.datetime.today(), birthday)
+    diff = relativedelta.relativedelta(datetime.today(), birthday)
     return '{} {}, {} {}, {} {}{}'.format(
         diff.years, 'year' + format_plural(diff.years), 
         diff.months, 'month' + format_plural(diff.months), 
@@ -304,7 +304,7 @@ def add_archive():
     data = data[7:len(data)-3]  # Remove the comment block    
     added_loc, deleted_loc, added_commits = 0, 0, 0
     contributed_repos = len(data)
-    
+
     # Process the valid lines
     for line in data:
         repo_hash, total_commits, my_commits, *loc = line.split()
@@ -312,7 +312,7 @@ def add_archive():
         deleted_loc += int(loc[1])
         if my_commits.isdigit(): 
             added_commits += int(my_commits)
-    
+
     # Check if the last line in old_data has enough data
     if len(old_data) > 0:
         last_line = old_data[-1].split()
@@ -322,7 +322,7 @@ def add_archive():
             print("Warning: Last line in archived data is malformed or missing expected data.")
     else:
         print("Warning: No data in repository archive.")
-    
+
     return [added_loc, deleted_loc, added_loc - deleted_loc, added_commits, contributed_repos]
 
 
