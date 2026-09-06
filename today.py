@@ -372,32 +372,46 @@ def svg_overwrite(filename, age_data, commit_data, star_data, repo_data, contrib
     """
     tree = etree.parse(filename)
     root = tree.getroot()
-    justify_format(root, 'commit_data', commit_data, 22)
-    justify_format(root, 'star_data', star_data, 14)
-    justify_format(root, 'repo_data', repo_data, 6)
-    justify_format(root, 'contrib_data', contrib_data)
-    justify_format(root, 'follower_data', follower_data, 10)
-    justify_format(root, 'loc_data', loc_data[2], 9)
-    justify_format(root, 'loc_add', loc_data[0], 7)
-    justify_format(root, 'loc_del', loc_data[1], 7)
-    justify_format(root, 'age_data', age_data)
+    # field_width is len(dots)+len(value) so each stats column stays a fixed character width
+    justify_format(root, 'age_data', age_data, 51)          # '. Uptime:' + 51 = 60
+    justify_format(root, 'repo_data', repo_data, 9)          # '. Repos:' + 9 + contrib block + ' ' = 36
+    contrib_text = f"{contrib_data:,}" if isinstance(contrib_data, int) else str(contrib_data)
+    find_and_replace(root, 'contrib_data', contrib_text.rjust(2))
+    justify_format(root, 'star_data', star_data, 16)         # 'Stars:' + 16 = 22
+    justify_format(root, 'commit_data', commit_data, 25)     # '. Commits:' + 25 = 35
+    justify_format(root, 'follower_data', follower_data, 12) # 'Followers:' + 12 = 22
+
+    loc_add, loc_del, loc_net = str(loc_data[0]), str(loc_data[1]), str(loc_data[2])
+    find_and_replace(root, 'loc_add', loc_add)
+    find_and_replace(root, 'loc_del', loc_del)
+    find_and_replace(root, 'loc_data', loc_net)
+    find_and_replace(root, 'loc_data_dots', dot_pad(25 - len(loc_net) - len(loc_add) - len(loc_del)))
     tree.write(filename, encoding='utf-8', xml_declaration=True)
 
 
-def justify_format(root, element_id, new_text, length=0):
+def dot_pad(fill_len):
     """
-    Updates and formats the text of the element, and modifies the amount of dots in the previous element to justify the new text on the svg
+    Return a dots string of exactly fill_len characters: ' ... '.
+    """
+    if fill_len <= 0:
+        return ''
+    if fill_len == 1:
+        return ' '
+    if fill_len == 2:
+        return '. '
+    return ' ' + ('.' * (fill_len - 2)) + ' '
+
+
+def justify_format(root, element_id, new_text, field_width=0):
+    """
+    Updates element text and pads the matching *_dots tspan so dots+value equal field_width.
     """
     if isinstance(new_text, int):
         new_text = f"{new_text:,}"
     new_text = str(new_text)
     find_and_replace(root, element_id, new_text)
-    just_len = max(0, length - len(new_text))
-    if just_len <= 2:
-        dot_string = {0: '', 1: ' ', 2: '. '}.get(just_len, ' ')
-    else:
-        dot_string = ' ' + ('.' * just_len) + ' '
-    find_and_replace(root, f"{element_id}_dots", dot_string)
+    if field_width:
+        find_and_replace(root, f"{element_id}_dots", dot_pad(field_width - len(new_text)))
 
 
 def find_and_replace(root, element_id, new_text):
